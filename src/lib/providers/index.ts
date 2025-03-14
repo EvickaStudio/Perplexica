@@ -4,6 +4,7 @@ import { loadOpenAIChatModels, loadOpenAIEmbeddingsModels } from './openai';
 import { loadAnthropicChatModels } from './anthropic';
 import { loadTransformersEmbeddingsModels } from './transformers';
 import { loadGeminiChatModels, loadGeminiEmbeddingsModels } from './gemini';
+import { loadOpenRouterChatModels, loadOpenRouterEmbeddingsModels } from './openrouter';
 import {
   getCustomOpenaiApiKey,
   getCustomOpenaiApiUrl,
@@ -17,6 +18,7 @@ const chatModelProviders = {
   ollama: loadOllamaChatModels,
   anthropic: loadAnthropicChatModels,
   gemini: loadGeminiChatModels,
+  openrouter: loadOpenRouterChatModels,
 };
 
 const embeddingModelProviders = {
@@ -24,6 +26,7 @@ const embeddingModelProviders = {
   local: loadTransformersEmbeddingsModels,
   ollama: loadOllamaEmbeddingsModels,
   gemini: loadGeminiEmbeddingsModels,
+  openrouter: loadOpenRouterEmbeddingsModels,
 };
 
 export const getAvailableChatModelProviders = async () => {

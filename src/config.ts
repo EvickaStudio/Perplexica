@@ -31,6 +31,11 @@ interface Config {
       API_KEY: string;
       MODEL_NAME: string;
     };
+    OPENROUTER: {
+      API_KEY: string;
+      SITE_URL: string;
+      APP_NAME: string;
+    };
   };
   API_ENDPOINTS: {
     SEARXNG: string;
@@ -60,6 +65,12 @@ export const getGroqApiKey = () => loadConfig().MODELS.GROQ.API_KEY;
 export const getAnthropicApiKey = () => loadConfig().MODELS.ANTHROPIC.API_KEY;
 
 export const getGeminiApiKey = () => loadConfig().MODELS.GEMINI.API_KEY;
+
+export const getOpenRouterApiKey = () => loadConfig().MODELS.OPENROUTER.API_KEY;
+
+export const getOpenRouterSiteUrl = () => loadConfig().MODELS.OPENROUTER.SITE_URL || '';
+
+export const getOpenRouterAppName = () => loadConfig().MODELS.OPENROUTER.APP_NAME || 'Perplexica';
 
 export const getSearxngApiEndpoint = () =>
   process.env.SEARXNG_API_URL || loadConfig().API_ENDPOINTS.SEARXNG;

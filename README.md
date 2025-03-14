@@ -54,6 +54,7 @@ Want to know more about its architecture and how it works? You can read it [here
 ## Features
 
 - **Local LLMs**: You can make use local LLMs such as Llama3 and Mixtral using Ollama.
+- **Multi-Provider Support**: Perplexica supports multiple LLM providers including OpenAI, Anthropic, Groq, Gemini, and OpenRouter (giving access to hundreds of models).
 - **Two Main Modes:**
   - **Copilot Mode:** (In development) Boosts search by generating different queries to find more relevant internet sources. Like normal search instead of just using the context by SearxNG, it visits the top matches and tries to find relevant sources to the user's query directly from the page.
   - **Normal Mode:** Processes your query and performs a web search.
@@ -90,6 +91,7 @@ There are mainly 2 ways of installing Perplexica - With Docker, Without Docker. 
    - `OLLAMA`: Your Ollama API URL. You should enter it as `http://host.docker.internal:PORT_NUMBER`. If you installed Ollama on port 11434, use `http://host.docker.internal:11434`. For other ports, adjust accordingly. **You need to fill this if you wish to use Ollama's models instead of OpenAI's**.
    - `GROQ`: Your Groq API key. **You only need to fill this if you wish to use Groq's hosted models**.
    - `ANTHROPIC`: Your Anthropic API key. **You only need to fill this if you wish to use Anthropic models**.
+   - `OPENROUTER`: Your OpenRouter API key and site URL. **You only need to fill this if you wish to use models through OpenRouter, which gives access to models from multiple providers**.
 
      **Note**: You can change these after starting Perplexica from the settings dialog.
 
