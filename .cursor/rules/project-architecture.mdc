@@ -1,0 +1,41 @@
+---
+description: This rule explains the system architecture and data flow of the Perplexica application.
+globs: **/*
+alwaysApply: true
+---
+
+This file outlines how the codebase is structured and how data flows through the app.
+
+## Core Components
+
+Perplexica is a Next.js application that functions as an AI-powered search engine. Its architecture is composed of several key components:
+
+1.  **Frontend**: A React-based interface built with Next.js, located in `src/components/` and `src/app/`. It provides the user interface for chat, settings, and other features.
+2.  **Backend (API Routes)**: A set of API endpoints in `src/app/api/` that handle all server-side logic, including chat processing, configuration management, and external API interactions.
+3.  **AI/LLM Orchestration**: The `src/lib/` directory contains the core logic for interacting with Large Language Models (LLMs). It uses LangChain.js to create chains and agents for different tasks.
+4.  **Search Engine Integration**: Perplexica uses SearxNG as its metasearch engine. The integration is handled in `src/lib/searxng.ts`.
+5.  **Database**: A SQLite database managed by Drizzle ORM, with the schema defined in `src/lib/db/schema.ts`.
+
+## Data Flow
+
+### Chat and Search
+
+1.  A user sends a message from the frontend (`ChatWindow.tsx`).
+2.  The message is sent to the `/api/chat` endpoint.
+3.  The `metaSearchAgent.ts` in `src/lib/search/` is invoked based on the selected "Focus Mode".
+4.  The agent processes the query, decides if a web search is needed, and generates a search query.
+5.  The query is sent to SearxNG via `src/lib/searxng.ts`.
+6.  The search results are processed, reranked for relevance using embedding models, and passed to the LLM.
+7.  The LLM generates a response, which is streamed back to the client.
+
+### Configuration
+
+- The application's configuration is stored in `config.toml`.
+- The frontend reads configuration from the `/api/config` endpoint.
+- The settings page (`src/app/settings/page.tsx`) allows users to update the configuration, which sends a POST request to `/api/config` to update the `config.toml` file on the server.
+
+### LLM Providers
+
+- Perplexica supports multiple LLM providers, managed in the `src/lib/providers/` directory.
+- Each provider has a file (e.g., `openai.ts`, `anthropic.ts`) that defines how to load its models.
+- The `getAvailableChatModelProviders` and `getAvailableEmbeddingModelProviders` functions in `src/lib/providers/index.ts` dynamically load the available models based on the provided API keys in `config.toml`.

@@ -21,6 +21,7 @@ import {
   getCustomOpenaiModelName,
 } from '@/lib/config';
 import { searchHandlers } from '@/lib/search';
+import { getAuthUser } from '@/lib/auth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -50,6 +51,7 @@ type Body = {
   chatModel: ChatModel;
   embeddingModel: EmbeddingModel;
   systemInstructions: string;
+  copilotEnabled: boolean;
 };
 
 const handleEmitterEvents = async (
@@ -182,6 +184,12 @@ const handleHistorySave = async (
 };
 
 export const POST = async (req: Request) => {
+  // Check authentication
+  const user = await getAuthUser(req);
+  if (!user) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     const body = (await req.json()) as Body;
     const { message } = body;
@@ -272,7 +280,7 @@ export const POST = async (req: Request) => {
       );
     }
 
-    const stream = await handler.searchAndAnswer(
+    const stream = await handler.answer(
       message.content,
       history,
       llm,
@@ -280,6 +288,7 @@ export const POST = async (req: Request) => {
       body.optimizationMode,
       body.files,
       body.systemInstructions,
+      body.copilotEnabled,
     );
 
     const responseStream = new TransformStream();

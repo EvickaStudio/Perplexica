@@ -356,6 +356,7 @@ const ChatWindow = ({ id }: { id?: string }) => {
 
   const sendMessage = async (
     message: string,
+    copilotEnabled: boolean,
     messageId?: string,
     rewrite = false,
   ) => {
@@ -516,6 +517,7 @@ const ChatWindow = ({ id }: { id?: string }) => {
           provider: embeddingModelProvider.provider,
         },
         systemInstructions: localStorage.getItem('systemInstructions'),
+        copilotEnabled: copilotEnabled,
       }),
     });
 
@@ -560,12 +562,12 @@ const ChatWindow = ({ id }: { id?: string }) => {
       return [...prev.slice(0, messages.length > 2 ? index - 1 : 0)];
     });
 
-    sendMessage(message.content, message.messageId, true);
+    sendMessage(message.content, false, message.messageId, true);
   };
 
   useEffect(() => {
     if (isReady && initialMessage && isConfigReady) {
-      sendMessage(initialMessage);
+      sendMessage(initialMessage, false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isConfigReady, isReady, initialMessage]);
@@ -598,7 +600,12 @@ const ChatWindow = ({ id }: { id?: string }) => {
             <Chat
               loading={loading}
               messages={messages}
-              sendMessage={sendMessage}
+              sendMessage={(
+                message: string,
+                copilotEnabled: boolean,
+                messageId?: string,
+                rewrite?: boolean,
+              ) => sendMessage(message, copilotEnabled, messageId, rewrite)}
               messageAppeared={messageAppeared}
               rewrite={rewrite}
               fileIds={fileIds}
@@ -609,7 +616,9 @@ const ChatWindow = ({ id }: { id?: string }) => {
           </>
         ) : (
           <EmptyChat
-            sendMessage={sendMessage}
+            sendMessage={(message, copilotEnabled) =>
+              sendMessage(message, copilotEnabled)
+            }
             focusMode={focusMode}
             setFocusMode={setFocusMode}
             optimizationMode={optimizationMode}

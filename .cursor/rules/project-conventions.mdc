@@ -1,0 +1,50 @@
+---
+description: High-level guidelines for writing code in the Perplexica project.
+globs: **/*
+alwaysApply: true
+---
+
+This rule serves as high-level documentation for how you should write code for the Perplexica codebase.
+
+## Project Tech Stack
+
+- **Framework**: [Next.js](https://nextjs.org/) (v15) with React v18
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/) with light/dark mode support.
+- **UI Components**: [Headless UI](https://headlessui.com/) and [Lucide Icons](https://lucide.dev/).
+- **Database**: [SQLite](https://www.sqlite.org/index.html) via `better-sqlite3` with [Drizzle ORM](https://orm.drizzle.team/).
+- **AI/LLM Orchestration**: [LangChain.js](https://js.langchain.com/) to manage interactions with various language models.
+- **Linting & Formatting**: ESLint and Prettier, configured in `package.json`.
+
+## Project Conventions
+
+These conventions must be followed when writing code for Perplexica.
+
+### Convention 1: Configuration Management
+
+- All secrets and environment-specific settings (like API keys) are managed in `config.toml`.
+- Server-side access to these settings is handled by functions in `src/lib/config.ts`.
+- The client-side settings page interacts with the `/api/config` endpoint.
+- **NEVER** hardcode API keys or other secrets directly in the code.
+
+### Convention 2: Backend Logic in API Routes
+
+- All backend logic is implemented as API routes within the `src/app/api/` directory.
+- Each API endpoint should have a clear responsibility (e.g., `/api/chat` for handling chat messages, `/api/search` for the public-facing search API).
+
+### Convention 3: Database and Schema
+
+- The database schema is defined in `src/lib/db/schema.ts` using Drizzle ORM.
+- Database migrations are managed by `drizzle-kit`. Run `npm run db:push` to apply schema changes.
+- Interact with the database via the `db` object exported from `src/lib/db/index.ts`.
+
+### Convention 4: Code Style and Quality
+
+- Adhere strictly to the existing code style.
+- Run `npm run lint` and `npm run format:write` to ensure code quality and consistency before committing.
+- Use the `cn` utility from `src/lib/utils.ts` for conditionally applying and merging Tailwind CSS classes.
+
+### Convention 5: Dependencies
+
+- Before adding a new dependency, check `package.json` to see if a similar library already exists.
+- Prefer using existing libraries and frameworks (Next.js, LangChain, Drizzle) to their full potential before introducing new ones.

@@ -1,0 +1,32 @@
+---
+description: This file describes Perplexica's design system and how views should be styled.
+globs: src/app/**/*.tsx, src/components/**/*.tsx
+alwaysApply: true
+---
+
+Use the rules below when writing or modifying frontend components.
+
+## UI Component Library
+
+- **Component Framework**: [React](https://react.dev/) with [Next.js](https://nextjs.org/).
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/).
+- **UI Primitives**: [Headless UI](https://headlessui.com/) is used for accessible, unstyled components like dialogs and switches.
+- **Icons**: [Lucide React](https://lucide.dev/guide/packages/lucide-react) is the icon library.
+
+## Styling and Theme
+
+- **CSS Classes**: Always use the `cn` utility from `src/lib/utils.ts` to combine and conditionally apply Tailwind CSS classes.
+- **Theming**: The application supports both light and dark themes. Use theme-aware colors (e.g., `bg-light-primary dark:bg-dark-primary`, `text-black/70 dark:text-white/70`).
+- **Responsive Design**: Ensure that all UI components are responsive and work well on both desktop and mobile devices.
+
+## Component Structure
+
+- **Reusable Components**: Create reusable components in the `src/components/` directory.
+- **Page-Specific Components**: Components used only on a single page can be defined within that page's file.
+- **State Management**: For simple component state, use React's `useState` and `useEffect` hooks. Avoid complex state management libraries unless absolutely necessary.
+
+## Prohibited Actions
+
+- Do not use inline styles. Always use Tailwind CSS classes.
+- Do not introduce new color palettes. Stick to the existing theme colors.
+- Do not add new global CSS styles without a strong justification.

@@ -31,5 +31,8 @@ API_KEY = "" # Required to use AI/ML API chat and embedding models
 [MODELS.LM_STUDIO]
 API_URL = "" # LM Studio API URL - http://host.docker.internal:1234
 
+[MODELS.OPENROUTER]
+API_KEY = "" # OpenRouter API Key - Get from https://openrouter.ai/keys
+
 [API_ENDPOINTS]
 SEARXNG = "" # SearxNG API URL - http://localhost:32768

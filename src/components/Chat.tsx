@@ -18,7 +18,7 @@ const Chat = ({
   setFiles,
 }: {
   messages: Message[];
-  sendMessage: (message: string) => void;
+  sendMessage: (message: string, copilotEnabled: boolean) => void;
   loading: boolean;
   messageAppeared: boolean;
   rewrite: (messageId: string) => void;
@@ -77,7 +77,7 @@ const Chat = ({
               dividerRef={isLast ? dividerRef : undefined}
               isLast={isLast}
               rewrite={rewrite}
-              sendMessage={sendMessage}
+              sendMessage={(message) => sendMessage(message, false)}
             />
             {!isLast && msg.role === 'assistant' && (
               <div className="h-px w-full bg-light-secondary dark:bg-dark-secondary" />
@@ -94,7 +94,9 @@ const Chat = ({
         >
           <MessageInput
             loading={loading}
-            sendMessage={sendMessage}
+            sendMessage={(message, copilotEnabled) =>
+              sendMessage(message, copilotEnabled)
+            }
             fileIds={fileIds}
             setFileIds={setFileIds}
             files={files}

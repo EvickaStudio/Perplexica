@@ -24,9 +24,19 @@ import computeSimilarity from '../utils/computeSimilarity';
 import formatChatHistoryAsString from '../utils/formatHistory';
 import eventEmitter from 'events';
 import { StreamEvent } from '@langchain/core/tracers/log_stream';
+import prompts from '../prompts';
 
 export interface MetaSearchAgentType {
-  searchAndAnswer: (
+  search: (
+    message: string,
+    history: BaseMessage[],
+    llm: BaseChatModel,
+    embeddings: Embeddings,
+    optimizationMode: 'speed' | 'balanced' | 'quality',
+    fileIds: string[],
+    copilotEnabled: boolean,
+  ) => Promise<any>;
+  answer: (
     message: string,
     history: BaseMessage[],
     llm: BaseChatModel,
@@ -34,6 +44,7 @@ export interface MetaSearchAgentType {
     optimizationMode: 'speed' | 'balanced' | 'quality',
     fileIds: string[],
     systemInstructions: string,
+    copilotEnabled: boolean,
   ) => Promise<eventEmitter>;
 }
 
@@ -58,6 +69,28 @@ class MetaSearchAgent implements MetaSearchAgentType {
 
   constructor(config: Config) {
     this.config = config;
+  }
+
+  private async createCopilotQueryGeneratorChain(llm: BaseChatModel) {
+    (llm as unknown as ChatOpenAI).temperature = 0;
+
+    return RunnableSequence.from([
+      RunnableMap.from({
+        chat_history: (input: BasicChainInput) =>
+          formatChatHistoryAsString(input.chat_history),
+        query: (input: BasicChainInput) => input.query,
+      }),
+      PromptTemplate.fromTemplate(prompts.copilotQueryGeneratorPrompt),
+      llm,
+      this.strParser,
+      RunnableLambda.from(async (input: string) => {
+        const queryParser = new LineListOutputParser({
+          key: 'query',
+        });
+
+        return await queryParser.parse(input);
+      }),
+    ]);
   }
 
   private async createSearchRetrieverChain(llm: BaseChatModel) {
@@ -238,6 +271,7 @@ class MetaSearchAgent implements MetaSearchAgentType {
     embeddings: Embeddings,
     optimizationMode: 'speed' | 'balanced' | 'quality',
     systemInstructions: string,
+    copilotEnabled: boolean,
   ) {
     return RunnableSequence.from([
       RunnableMap.from({
@@ -254,16 +288,16 @@ class MetaSearchAgent implements MetaSearchAgentType {
           let query = input.query;
 
           if (this.config.searchWeb) {
-            const searchRetrieverChain =
-              await this.createSearchRetrieverChain(llm);
-
-            const searchRetrieverResult = await searchRetrieverChain.invoke({
-              chat_history: processedHistory,
-              query,
-            });
-
-            query = searchRetrieverResult.query;
-            docs = searchRetrieverResult.docs;
+            docs = await this.search(
+              input.query,
+              input.chat_history,
+              llm,
+              embeddings,
+              optimizationMode,
+              fileIds,
+              copilotEnabled, // Pass copilotEnabled here
+            );
+            query = input.query; // Keep original query for answering
           }
 
           const sortedDocs = await this.rerankDocs(
@@ -417,6 +451,44 @@ class MetaSearchAgent implements MetaSearchAgentType {
         .map((sim) => docsWithContent[sim.index]);
 
       return sortedDocs;
+    } else if (optimizationMode === 'quality') {
+      const [docEmbeddings, queryEmbedding] = await Promise.all([
+        embeddings.embedDocuments(
+          docsWithContent.map((doc) => doc.pageContent),
+        ),
+        embeddings.embedQuery(query),
+      ]);
+
+      docsWithContent.push(
+        ...filesData.map((fileData) => {
+          return new Document({
+            pageContent: fileData.content,
+            metadata: {
+              title: fileData.fileName,
+              url: `File`,
+            },
+          });
+        }),
+      );
+
+      docEmbeddings.push(...filesData.map((fileData) => fileData.embeddings));
+
+      const similarity = docEmbeddings.map((docEmbedding, i) => {
+        const sim = computeSimilarity(queryEmbedding, docEmbedding);
+
+        return {
+          index: i,
+          similarity: sim,
+        };
+      });
+
+      const sortedDocs = similarity
+        .filter((sim) => sim.similarity > (this.config.rerankThreshold ?? 0.3))
+        .sort((a, b) => b.similarity - a.similarity)
+        .slice(0, 30) // Return more documents for 'quality' mode
+        .map((sim) => docsWithContent[sim.index]);
+
+      return sortedDocs;
     }
 
     return [];
@@ -464,7 +536,71 @@ class MetaSearchAgent implements MetaSearchAgentType {
     }
   }
 
-  async searchAndAnswer(
+  async search(
+    message: string,
+    history: BaseMessage[],
+    llm: BaseChatModel,
+    embeddings: Embeddings,
+    optimizationMode: 'speed' | 'balanced' | 'quality',
+    fileIds: string[],
+    copilotEnabled: boolean,
+  ) {
+    let docs: Document[] = [];
+    let query = message;
+
+    if (copilotEnabled) {
+      const copilotQueryGeneratorChain =
+        await this.createCopilotQueryGeneratorChain(llm);
+      const generatedQueries = await copilotQueryGeneratorChain.invoke({
+        chat_history: history,
+        query: message,
+      });
+
+      for (const q of generatedQueries) {
+        const res = await searchSearxng(q, {
+          language: 'en',
+          engines: this.config.activeEngines,
+        });
+        docs.push(
+          ...res.results.map(
+            (result) =>
+              new Document({
+                pageContent:
+                  result.content ||
+                  (this.config.activeEngines.includes('youtube')
+                    ? result.title
+                    : ''),
+                metadata: {
+                  title: result.title,
+                  url: result.url,
+                  ...(result.img_src && { img_src: result.img_src }),
+                },
+              }),
+          ),
+        );
+      }
+    } else {
+      const searchRetrieverChain = await this.createSearchRetrieverChain(llm);
+      const searchRetrieverResult = await searchRetrieverChain.invoke({
+        chat_history: formatChatHistoryAsString(history),
+        query: message,
+      });
+      query = searchRetrieverResult.query;
+      docs = searchRetrieverResult.docs;
+    }
+
+    const rerankedDocs = await this.rerankDocs(
+      query,
+      docs ?? [],
+      fileIds,
+      embeddings,
+      optimizationMode,
+    );
+
+    return rerankedDocs;
+  }
+
+  async answer(
     message: string,
     history: BaseMessage[],
     llm: BaseChatModel,
@@ -472,6 +608,7 @@ class MetaSearchAgent implements MetaSearchAgentType {
     optimizationMode: 'speed' | 'balanced' | 'quality',
     fileIds: string[],
     systemInstructions: string,
+    copilotEnabled: boolean,
   ) {
     const emitter = new eventEmitter();
 
@@ -481,6 +618,7 @@ class MetaSearchAgent implements MetaSearchAgentType {
       embeddings,
       optimizationMode,
       systemInstructions,
+      copilotEnabled,
     );
 
     const stream = answeringChain.streamEvents(

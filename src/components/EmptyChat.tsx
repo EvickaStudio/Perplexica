@@ -16,7 +16,7 @@ const EmptyChat = ({
   files,
   setFiles,
 }: {
-  sendMessage: (message: string) => void;
+  sendMessage: (message: string, copilotEnabled: boolean) => void;
   focusMode: string;
   setFocusMode: (mode: string) => void;
   optimizationMode: string;

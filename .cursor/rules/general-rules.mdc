@@ -1,0 +1,23 @@
+---
+description: General rules for the AI agent to follow when working on the Perplexica project.
+globs: **/*
+alwaysApply: true
+---
+
+- **Read Project Documentation First**: Before generating any code, carefully read the project's documentation and conventions:
+    - [project-conventions.mdc](mdc:.cursor/rules/project-conventions.mdc) to understand how to write code for the codebase.
+    - [project-architecture.mdc](mdc:.cursor/rules/project-architecture.mdc) to understand the system architecture and data flow.
+    - [ui-ux-design-guidelines.mdc](mdc:.cursor/rules/ui-ux-design-guidelines.mdc) to understand how to implement frontend code.
+
+- **Follow Existing Patterns**: Always follow the existing coding patterns and conventions found in the project. If a file has a certain style, maintain that style.
+
+- **Verify with `package.json`**: Before using a new library or framework, check `package.json` to see if it's already a dependency. Do not add new dependencies without a strong reason.
+
+- **Run Verification Scripts**: After making changes, run the following scripts to ensure code quality:
+    - `npm run lint`
+    - `npm run format:write`
+
+## Prohibited Actions
+
+- Do not run `npm start` or `npm run dev` in your responses.
+- Do not modify the `README.md` or `LICENSE` files unless explicitly asked to.

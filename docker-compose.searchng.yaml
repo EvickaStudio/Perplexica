@@ -1,0 +1,9 @@
+# Just starts the searxng server not the whole project
+services:
+  searxng:
+    image: docker.io/searxng/searxng:latest
+    volumes:
+      - ./searxng:/etc/searxng:rw
+    ports:
+      - '4000:8080'
+    restart: unless-stopped

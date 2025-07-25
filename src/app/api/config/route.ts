@@ -10,6 +10,7 @@ import {
   getDeepseekApiKey,
   getAimlApiKey,
   getLMStudioApiEndpoint,
+  getOpenrouterApiKey,
   updateConfig,
 } from '@/lib/config';
 import {
@@ -59,6 +60,7 @@ export const GET = async (req: Request) => {
     config['geminiApiKey'] = getGeminiApiKey();
     config['deepseekApiKey'] = getDeepseekApiKey();
     config['aimlApiKey'] = getAimlApiKey();
+    config['openrouterApiKey'] = getOpenrouterApiKey();
     config['customOpenaiApiUrl'] = getCustomOpenaiApiUrl();
     config['customOpenaiApiKey'] = getCustomOpenaiApiKey();
     config['customOpenaiModelName'] = getCustomOpenaiModelName();
@@ -102,6 +104,9 @@ export const POST = async (req: Request) => {
         },
         LM_STUDIO: {
           API_URL: config.lmStudioApiUrl,
+        },
+        OPENROUTER: {
+          API_KEY: config.openrouterApiKey,
         },
         CUSTOM_OPENAI: {
           API_URL: config.customOpenaiApiUrl,

@@ -26,6 +26,7 @@ export const loadGroqChatModels = async () => {
     const chatModels: Record<string, ChatModel> = {};
 
     groqChatModels.forEach((model: any) => {
+      if (model.id.includes('whisper')) return;
       chatModels[model.id] = {
         displayName: model.id,
         model: new ChatOpenAI({

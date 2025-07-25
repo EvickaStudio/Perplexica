@@ -1,11 +1,21 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { BookOpenText, Home, Search, SquarePen, Settings } from 'lucide-react';
+import {
+  BookOpenText,
+  Home,
+  Search,
+  SquarePen,
+  Settings,
+  LogOut,
+  User,
+  Terminal,
+} from 'lucide-react';
 import Link from 'next/link';
 import { useSelectedLayoutSegments } from 'next/navigation';
 import React, { useState, type ReactNode } from 'react';
 import Layout from './Layout';
+import { useSession, signOut } from 'next-auth/react';
 
 const VerticalIconContainer = ({ children }: { children: ReactNode }) => {
   return (
@@ -15,6 +25,7 @@ const VerticalIconContainer = ({ children }: { children: ReactNode }) => {
 
 const Sidebar = ({ children }: { children: React.ReactNode }) => {
   const segments = useSelectedLayoutSegments();
+  const { data: session } = useSession();
 
   const navLinks = [
     {
@@ -34,6 +45,12 @@ const Sidebar = ({ children }: { children: React.ReactNode }) => {
       href: '/library',
       active: segments.includes('library'),
       label: 'Library',
+    },
+    {
+      icon: Terminal,
+      href: '/dev',
+      active: segments.includes('dev'),
+      label: 'API',
     },
   ];
 
@@ -64,9 +81,28 @@ const Sidebar = ({ children }: { children: React.ReactNode }) => {
             ))}
           </VerticalIconContainer>
 
-          <Link href="/settings">
-            <Settings className="cursor-pointer" />
-          </Link>
+          <div className="flex flex-col items-center gap-y-3">
+            <Link href="/settings">
+              <Settings className="cursor-pointer" />
+            </Link>
+            {session?.user && (
+              <div className="flex flex-col items-center gap-y-2">
+                <div className="p-2 bg-light-200 dark:bg-dark-200 rounded-lg">
+                  <User
+                    size={16}
+                    className="text-black/70 dark:text-white/70"
+                  />
+                </div>
+                <button
+                  onClick={() => signOut({ callbackUrl: '/login' })}
+                  className="p-1.5 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors"
+                  title="Sign out"
+                >
+                  <LogOut size={14} />
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

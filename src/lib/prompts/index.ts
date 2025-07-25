@@ -16,8 +16,10 @@ import {
   youtubeSearchResponsePrompt,
   youtubeSearchRetrieverPrompt,
 } from './youtubeSearch';
+import { copilotQueryGeneratorPrompt } from './copilotQueryGeneratorPrompt';
 
 export default {
+  copilotQueryGeneratorPrompt,
   webSearchResponsePrompt,
   webSearchRetrieverPrompt,
   academicSearchResponsePrompt,
