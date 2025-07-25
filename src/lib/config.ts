@@ -62,13 +62,79 @@ type RecursivePartial<T> = {
 const loadConfig = () => {
   // Server-side only
   if (typeof window === 'undefined') {
-    return toml.parse(
-      fs.readFileSync(path.join(process.cwd(), `${configFileName}`), 'utf-8'),
-    ) as any as Config;
+    try {
+      const configPath = path.join(process.cwd(), configFileName);
+      
+      // Check if file exists before trying to read it
+      if (!fs.existsSync(configPath)) {
+        console.warn(`Config file not found at ${configPath}. Using default configuration.`);
+        return getDefaultConfig();
+      }
+      
+      // Check if path is a directory
+      const stats = fs.statSync(configPath);
+      if (stats.isDirectory()) {
+        console.error(`Path ${configPath} is a directory, not a file. Using default configuration.`);
+        return getDefaultConfig();
+      }
+      
+      return toml.parse(
+        fs.readFileSync(configPath, 'utf-8'),
+      ) as any as Config;
+    } catch (error) {
+      console.error(`Error loading config file: ${error}. Using default configuration.`);
+      return getDefaultConfig();
+    }
   }
 
   // Client-side fallback - settings will be loaded via API
   return {} as Config;
+};
+
+const getDefaultConfig = (): Config => {
+  return {
+    GENERAL: {
+      SIMILARITY_MEASURE: "cosine",
+      KEEP_ALIVE: "5m"
+    },
+    MODELS: {
+      OPENAI: {
+        API_KEY: ""
+      },
+      GROQ: {
+        API_KEY: ""
+      },
+      ANTHROPIC: {
+        API_KEY: ""
+      },
+      GEMINI: {
+        API_KEY: ""
+      },
+      OLLAMA: {
+        API_URL: ""
+      },
+      DEEPSEEK: {
+        API_KEY: ""
+      },
+      AIMLAPI: {
+        API_KEY: ""
+      },
+      LM_STUDIO: {
+        API_URL: ""
+      },
+      OPENROUTER: {
+        API_KEY: ""
+      },
+      CUSTOM_OPENAI: {
+        API_URL: "",
+        API_KEY: "",
+        MODEL_NAME: ""
+      }
+    },
+    API_ENDPOINTS: {
+      SEARXNG: ""
+    }
+  };
 };
 
 export const getSimilarityMeasure = () =>

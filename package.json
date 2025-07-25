@@ -9,7 +9,8 @@
     "start": "next start",
     "lint": "next lint",
     "format:write": "prettier . --write",
-    "db:push": "drizzle-kit push"
+    "db:push": "drizzle-kit push",
+    "setup": "node create-config.js"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.0",
